@@ -31,7 +31,7 @@ define openfire::room (
   }
 
   exec { 'Waiting for Openfire service':
-    command   => "wget --spider http://${::ipaddress}:${openfire::of_port}",
+    command   => "wget --spider http://${::ipaddress}:${openfire::of_port} && sleep 10",
     path      => '/usr/local/bin:/usr/bin:/bin',
     timeout   => 30,
     tries     => 20,
@@ -44,7 +44,7 @@ define openfire::room (
       'curl -X POST ',
       "-u admin:${::openfire::of_admin_pass}",
       '--header "Content-Type: application/xml"',
-      "-d '<chatRoom><naturalName>${room_name}</naturalName><roomName>${room_id}</roomName><description>${description}</description><persistent>true</persistent></chatRoom>'",
+      "-d '<chatRoom><naturalName>${room_name}</naturalName><roomName>${room_id}</roomName><description>${description}</description><persistent>true</persistent><publicRoom>true</publicRoom><registrationEnabled>true</registrationEnabled><canChangeNickname>true</canChangeNickname></chatRoom>'",
       "http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms",
     ], ' '),
     path      => '/usr/local/bin:/usr/bin:/bin',

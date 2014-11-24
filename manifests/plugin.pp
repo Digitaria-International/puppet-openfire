@@ -15,30 +15,22 @@
 #
 #
 define openfire::plugin (
-  $pluginsfile = '',
+  $plugins_base_url = $::openfire::plugins_base_url,
 ){
-  $file = $pluginsfile
+  #$file = $pluginsfile
+  #$regex = "${name}.*url=\"([^\"]*)\""
+  #$plugin = inline_template("<%= @file.match('${regex}') %>")
+  #$download_url = inline_template("<%= @plugin.match('url=\"([^\"]*)')[1] %>")
+  #$jarfile = inline_template("<%= @download_url.match('\\/\\/(.+\\/)*(.+)\\/(.*)$')[3] %>")
 
-  $regex = "${name}.*url=\"([^\"]*)\""
+  $download_url = join( [$plugins_base_url, $name], '/')
 
-  if $file == '' {
-    warning("Plugins file does not exists. Skipping ${name}")
-  }
-
-  $plugin = inline_template("<%= @file.match('${regex}') %>")
-  $download_url = inline_template("<%= @plugin.match('url=\"([^\"]*)')[1] %>")
-  $jarfile = inline_template("<%= @download_url.match('\\/\\/(.+\\/)*(.+)\\/(.*)$')[3] %>")
-
-  if ($download_url != '') and ($jarfile != '') {
-    #Download
-    exec { "Plugin:${name}":
-      command => "wget ${download_url} -O ${::openfire::user_home}/plugins/${jarfile}",
-      path    => '/bin:/usr/bin',
-      creates => "${::openfire::user_home}/plugins/${jarfile}",
-      unless  => "test -f ${::openfire::user_home}/plugins/${jarfile}",
-    }
-  } else {
-    fail('Download url or file name could not be determined.')
+  #Download
+  exec { "Plugin:${name}":
+    command => "wget ${download_url} -O ${::openfire::user_home}/plugins/${name}",
+    path    => '/bin:/usr/bin',
+    creates => "${::openfire::user_home}/plugins/${name}",
+    unless  => "test -f ${::openfire::user_home}/plugins/${name}",
   }
 
 }

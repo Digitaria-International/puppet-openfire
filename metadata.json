@@ -1,0 +1,23 @@
+{
+  "name": "forj-openfire",
+  "version": "0.0.2",
+  "author": "forj",
+  "summary": "Openfire puppet module",
+  "license": "Apache License, Version 2.0",
+  "source": "https://github.com/forj-oss/puppet-openfire",
+  "project_page": "https://github.com/forj-oss/puppet-openfire",
+  "issues_url": "https://github.com/forj-oss/puppet-openfire/issues",
+  "description": "Module to install Openfire server using puppet",
+  "tags": ["openfire","xmpp","chat"],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": ["12.04", "14.04"]
+    }
+  ],
+  "dependencies": [
+    {"name":"puppetlabs/stdlib","version_requirement":">= 3.1.0"},
+    {"name":"puppetlabs-mysql","version_requirement":">= 2.3.1"},
+    {"name":"puppetlabs-java","version_requirement":">= 1.2.0"}
+  ]
+}

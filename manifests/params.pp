@@ -15,16 +15,18 @@
 #
 #
 class openfire::params {
-  $install_java   = true
-  $url            = 'http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_3_9_3.tar.gz'
-  $user_home      = '/opt/openfire'
-  $dbhost         = 'localhost'
-  $dbname         = 'openfiredb'
-  $dbuser_name    = 'openfire'
-  $dbuser_pass    = 'changeme'
-  $of_port        = '9090'
-  $of_secure_port = '9091'
-  $of_admin_pass  = 'changeme'
-  $of_config      = { 'xmpp.domain' => $::fqdn }
-  $plugins        = []
+  $install_java     = true
+  $tar_url          = 'http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_3_9_3.tar.gz'
+  $plugins_base_url = 'http://www.igniterealtime.org/projects/openfire/plugins'
+  $user_home        = '/opt/openfire'
+  $dbhost           = 'localhost'
+  $dbport           = '3306'
+  $dbname           = 'openfiredb'
+  $dbuser_name      = 'openfire'
+  $dbuser_pass      = 'changeme'
+  $of_port          = '9090'
+  $of_secure_port   = '9091'
+  $of_admin_pass    = 'changeme'
+  $of_config        = { 'xmpp.domain' => { value => $::fqdn } }
+  $plugins          = []
 }

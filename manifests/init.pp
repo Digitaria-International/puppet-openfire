@@ -15,24 +15,27 @@
 #
 #
 class openfire (
-  $install_java   = $::openfire::params::install_java,
-  $url            = $::openfire::params::url,
-  $user_home      = $::openfire::params::user_home,
-  $dbhost         = $::openfire::params::dbhost,
-  $dbname         = $::openfire::params::dbname,
-  $dbuser_name    = $::openfire::params::dbuser_name,
-  $dbuser_pass    = $::openfire::params::dbuser_pass,
-  $of_port        = $::openfire::params::of_port,
-  $of_secure_port = $::openfire::params::of_secure_port,
-  $of_admin_pass  = $::openfire::params::of_admin_pass,
-  $of_config      = $::openfire::params::of_config,
-  $plugins        = $::openfire::params::plugins,
+  $install_java     = $::openfire::params::install_java,
+  $tar_url          = $::openfire::params::tar_url,
+  $plugins_base_url = $::openfire::params::plugins_base_url,
+  $user_home        = $::openfire::params::user_home,
+  $dbhost           = $::openfire::params::dbhost,
+  $dbport           = $::openfire::params::dbport,
+  $dbname           = $::openfire::params::dbname,
+  $dbuser_name      = $::openfire::params::dbuser_name,
+  $dbuser_pass      = $::openfire::params::dbuser_pass,
+  $of_port          = $::openfire::params::of_port,
+  $of_secure_port   = $::openfire::params::of_secure_port,
+  $of_admin_pass    = $::openfire::params::of_admin_pass,
+  $of_config        = $::openfire::params::of_config,
+  $plugins          = $::openfire::params::plugins,
 ) inherits openfire::params {
 
   validate_bool($install_java)
-  validate_string($url, $user_home, $dbhost, $dbname, $dbuser_name,
-    $dbuser_pass, $of_port, $of_secure_port, $of_admin_pass)
+  validate_string($tar_url, $plugins_base_url, $user_home, $dbhost, $dbport, $dbname,
+    $dbuser_name, $dbuser_pass, $of_port, $of_secure_port, $of_admin_pass)
   validate_hash($of_config)
+  validate_array($plugins)
 
   if $of_port == '' {
     fail('Openfire default port cannot be null')
@@ -48,18 +51,10 @@ class openfire (
   class { '::openfire::config': }
   class { '::openfire::service': }
 
-  #Plugins
-  if $plugins {
-    openfire::plugin { $plugins:
-      pluginsfile => file("${user_home}/conf/available-plugins.xml"),
-    }
-  }
-
   #Containment
   Anchor['openfire::begin'] ->
   Class['::openfire::install'] ->
   Class['::openfire::config'] ~>
   Class['::openfire::service'] ->
-  Openfire::Plugin[$plugins] ->
   Anchor['openfire::end']
 }

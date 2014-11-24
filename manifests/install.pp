@@ -45,14 +45,6 @@ class openfire::install
     require => User['jive'],
   }
 
-  notify{ '>>>>>> Group/User/Home for jive created':
-    subscribe =>  [
-                    Group['jive'],
-                    User['jive'],
-                    File[$::openfire::user_home],
-                  ]
-  }
-
 #  $urlpkg = 'http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_3.9.3_all.deb'
 #  exec { 'download-openfire.deb':
 #    command => "wget ${urlpkg} -O /tmp/openfire.deb",
@@ -78,7 +70,7 @@ class openfire::install
   $downloaded_file = '/tmp/openfire.tar.gz'
   #Download file
   exec { 'download-openfire':
-    command => "wget ${::openfire::url} -O ${downloaded_file}",
+    command => "wget ${::openfire::tar_url} -O ${downloaded_file}",
     path    => '/bin:/usr/bin',
     creates => $downloaded_file,
     unless  => "test -f ${::openfire::user_home}/bin/openfire",
@@ -104,5 +96,4 @@ class openfire::install
     content => template('openfire/openfire.xml.erb'),
     require => Exec["extract-${downloaded_file}"],
   }
-
 }

@@ -37,7 +37,7 @@
     <database>
       <defaultProvider>
         <driver>com.mysql.jdbc.Driver</driver>
-        <serverURL>jdbc:mysql://<%= @dbhost %>:3306/<%= @dbname %>?rewriteBatchedStatements=true</serverURL>
+        <serverURL>jdbc:mysql://<%= @dbhost %>:<%= @dbport %>/<%= @dbname %>?rewriteBatchedStatements=true</serverURL>
         <username><%= @dbuser_name %></username>
         <password><%= @dbuser_pass %></password>
         <testSQL>select 1</testSQL>

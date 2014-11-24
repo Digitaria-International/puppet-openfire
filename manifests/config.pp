@@ -16,15 +16,6 @@
 #
 class openfire::config
 {
-  #Required plugin for Room handling
-  $muc_url = 'http://www.igniterealtime.org/projects/openfire/plugins/mucservice.jar'
-  exec { "Plugin:${name}":
-    command => "wget ${muc_url}",
-    cwd     => "${::openfire::user_home}/plugins/",
-    path    => '/bin:/usr/bin',
-    unless  => "test -f ${::openfire::user_home}/plugins/mucservice.jar",
-  }
-
   #MySql Configuration
   include mysql::server
   
@@ -46,5 +37,16 @@ class openfire::config
     require  => Mysql::Db[$::openfire::dbname],
   }
 
-  create_resources('openfire::property', $::openfire::of_config)
+  #Adding Required plugin for Room handling
+  openfire::plugin { 'mucservice.jar': }
+
+  if $::openfire::plugins {
+    $install_plugins = reject($::openfire::plugins, 'mucservice.jar')
+    if $install_plugins {
+      openfire::plugin { $install_plugins: }
+    }
+  }
+  if $::openfire::of_config {
+    create_resources('openfire::property', $::openfire::of_config)
+  }
 }

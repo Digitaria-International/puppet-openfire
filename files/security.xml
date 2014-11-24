@@ -50,8 +50,10 @@
         (already in the database) can be added to this list at runtime via the
         "System Properties" page in the Openfire console.
       -->
+      <!-- Commented in order to avoid the openfire.xml changes
       <name>database.defaultProvider.username</name>
       <name>database.defaultProvider.password</name>
+      -->
     </property>
   </encrypt>
   <!--
