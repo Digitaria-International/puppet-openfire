@@ -1,3 +1,8 @@
+## 2015-01-15 - 0.0.3
+
+* Fixed dependencies issues.
+* Lowered mysql puppet module required version
+
 ## 2014-11-27 - 0.0.2
 
 ### Features:

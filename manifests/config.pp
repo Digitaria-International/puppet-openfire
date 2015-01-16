@@ -22,7 +22,7 @@ class openfire::config
   mysql::db { $::openfire::dbname:
     user     => $::openfire::dbuser_name,
     password => $::openfire::dbuser_pass,
-    dbname   => $::openfire::dbname,
+    #dbname   => $::openfire::dbname, < removed for compatibility
     host     => $::openfire::dbhost,
     grant    => ['ALL'],
     sql      => "${::openfire::user_home}/resources/database/openfire_mysql.sql",
