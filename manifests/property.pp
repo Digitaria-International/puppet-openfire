@@ -35,5 +35,6 @@ ON DUPLICATE KEY UPDATE name=VALUES(name), propValue=VALUES(propValue);"
     path      => '/usr/bin/',
     onlyif    => "test -z $(mysql ${::openfire::dbname} -e \"${validate}\")",
     logoutput => 'on_failure',
+    require   => Mysql::Db[$::openfire::dbname],
   }
 }

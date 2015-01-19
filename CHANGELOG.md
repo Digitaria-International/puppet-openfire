@@ -2,6 +2,7 @@
 
 * Fixed dependencies issues.
 * Lowered mysql puppet module required version
+* Fixed property class dependency issue
 
 ## 2014-11-27 - 0.0.2
 
