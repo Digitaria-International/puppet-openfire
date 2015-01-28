@@ -15,9 +15,13 @@
 #
 #
 define openfire::room (
-  $room_id      = $name,
-  $room_name    = '',
-  $description  = '',
+  $room_id               = $name,
+  $room_name             = '',
+  $description           = '',
+  $broadcast_moderator   = true,
+  $broadcast_participant = true,
+  $broadcast_visitor     = true,
+  $log_conversations     = false,
 ) {
 
   if $room_id == '' {
@@ -30,7 +34,21 @@ define openfire::room (
     fail('Room description is required.')
   }
 
-  exec { 'Waiting for Openfire service':
+  validate_bool($broadcast_moderator, $broadcast_participant, $broadcast_visitor, $log_conversations)
+
+  ## Broadcast settings
+  if $broadcast_moderator{
+    $bc_mod = '<broadcastPresenceRole>moderator</broadcastPresenceRole>'
+  }
+  if $broadcast_participant {
+    $bc_par = '<broadcastPresenceRole>participant</broadcastPresenceRole>'
+  }
+  if $broadcast_visitor {
+    $bc_vis = '<broadcastPresenceRole>visitor</broadcastPresenceRole>'
+  }
+  $broadcast = "<broadcastPresenceRoles>${bc_mod}${bc_par}${bc_vis}</broadcastPresenceRoles>"
+
+  exec { "Waiting for Openfire service: ${room_id}":
     command   => "wget --spider http://${::ipaddress}:${openfire::of_port} && sleep 10",
     path      => '/usr/local/bin:/usr/bin:/bin',
     timeout   => 30,
@@ -44,7 +62,7 @@ define openfire::room (
       'curl -X POST ',
       "-u admin:${::openfire::of_admin_pass}",
       '--header "Content-Type: application/xml"',
-      "-d '<chatRoom><naturalName>${room_name}</naturalName><roomName>${room_id}</roomName><description>${description}</description><persistent>true</persistent><publicRoom>true</publicRoom><registrationEnabled>true</registrationEnabled><canChangeNickname>true</canChangeNickname></chatRoom>'",
+      "-d '<chatRoom><naturalName>${room_name}</naturalName><roomName>${room_id}</roomName><description>${description}</description><persistent>true</persistent><publicRoom>true</publicRoom><registrationEnabled>true</registrationEnabled><canChangeNickname>true</canChangeNickname><logEnabled>${log_conversations}</logEnabled>${broadcast}</chatRoom>'",
       "http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms",
     ], ' '),
     path      => '/usr/local/bin:/usr/bin:/bin',
