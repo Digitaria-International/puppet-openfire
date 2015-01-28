@@ -18,10 +18,14 @@ define openfire::room (
   $room_id               = $name,
   $room_name             = '',
   $description           = '',
+  $list_room_directory   = true,
+  $is_persistent         = true,
+  $is_members_only       = false,
   $broadcast_moderator   = true,
   $broadcast_participant = true,
   $broadcast_visitor     = true,
   $log_conversations     = false,
+  $ensure                = 'present',
 ) {
 
   if $room_id == '' {
@@ -34,9 +38,20 @@ define openfire::room (
     fail('Room description is required.')
   }
 
-  validate_bool($broadcast_moderator, $broadcast_participant, $broadcast_visitor, $log_conversations)
+  validate_bool($list_room_directory, $broadcast_moderator, $broadcast_participant, $broadcast_visitor,
+    $log_conversations, $is_persistent, $is_members_only)
 
-  ## Broadcast settings
+  ## Properties set to send as a command
+  $nat_name = "<naturalName>${room_name}</naturalName>"
+  $roomname = "<roomName>${room_id}</roomName>"
+  $desc     = "<description>${description}</description>"
+  $pers     = "<persistent>${is_persistent}</persistent>"
+  $log_on   = "<logEnabled>${log_conversations}</logEnabled>"
+  $listpub  = "<publicRoom>${list_room_directory}</publicRoom>"
+  $memb     = "<membersOnly>${is_members_only}</membersOnly>"
+  $misc     = '<registrationEnabled>true</registrationEnabled><canChangeNickname>true</canChangeNickname>'
+
+  ### Broadcast settings
   if $broadcast_moderator{
     $bc_mod = '<broadcastPresenceRole>moderator</broadcastPresenceRole>'
   }
@@ -48,6 +63,8 @@ define openfire::room (
   }
   $broadcast = "<broadcastPresenceRoles>${bc_mod}${bc_par}${bc_vis}</broadcastPresenceRoles>"
 
+  $room_string = "${nat_name}${roomname}${desc}${pers}${listpub}${memb}${misc}${log_on}${broadcast}"
+
   exec { "Waiting for Openfire service: ${room_id}":
     command   => "wget --spider http://${::ipaddress}:${openfire::of_port} && sleep 10",
     path      => '/usr/local/bin:/usr/bin:/bin',
@@ -56,17 +73,62 @@ define openfire::room (
     try_sleep => 5,
     require   => Class['::openfire::service'],
     unless    => "wget --spider http://${::ipaddress}:${openfire::of_port}"
-  } ->
-  exec { "CreateRoom:${room_id}":
-    command   => join([
-      'curl -X POST ',
-      "-u admin:${::openfire::of_admin_pass}",
-      '--header "Content-Type: application/xml"',
-      "-d '<chatRoom><naturalName>${room_name}</naturalName><roomName>${room_id}</roomName><description>${description}</description><persistent>true</persistent><publicRoom>true</publicRoom><registrationEnabled>true</registrationEnabled><canChangeNickname>true</canChangeNickname><logEnabled>${log_conversations}</logEnabled>${broadcast}</chatRoom>'",
-      "http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms",
-    ], ' '),
-    path      => '/usr/local/bin:/usr/bin:/bin',
-    logoutput => 'on_failure',
-    onlyif    => "curl -s http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms/${room_id} -u admin:${::openfire::of_admin_pass} | grep 'Chat room could be not found'"
   }
+
+  if $ensure == 'present' {
+    #NEW ROOM
+    exec { "CreateRoom:${room_id}":
+      command   => join([
+        'curl -X POST ',
+        "-u admin:${::openfire::of_admin_pass}",
+        '--header "Content-Type: application/xml"',
+        "-d '<chatRoom>${room_string}</chatRoom>'",
+        "http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms",
+      ], ' '),
+      path      => '/usr/local/bin:/usr/bin:/bin',
+      logoutput => 'on_failure',
+      onlyif    => "curl -s http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms/${room_id} -u admin:${::openfire::of_admin_pass} | grep 'Chat room could be not found'",
+      require   => Exec["Waiting for Openfire service: ${room_id}"]
+    }
+
+    #UPDATE ROOM
+    $fileaction = 'file'
+    exec { "UpdateRoom:${room_id}":
+      command   => join([
+        'curl -X PUT ',
+        "-u admin:${::openfire::of_admin_pass}",
+        '--header "Content-Type: application/xml"',
+        "-d '<chatRoom>${room_string}</chatRoom>'",
+        "http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms/${room_id}",
+      ], ' '),
+      path      => '/usr/local/bin:/usr/bin:/bin',
+      logoutput => 'on_failure',
+      unless    => "grep '${room_string}' ${::openfire::user_home}/${room_id}.bkp",
+      require   => Exec["Waiting for Openfire service: ${room_id}"],
+      notify    => File["${::openfire::user_home}/.${room_id}"],
+    }
+
+  } else {
+    $fileaction = 'absent'
+    #DELETE ROOM
+    exec { "DeleteRoom:${room_id}":
+      command   => join([
+        'curl -X DELETE ',
+        "-u admin:${::openfire::of_admin_pass}",
+        "http://${::ipaddress}:${openfire::of_port}/plugins/mucservice/chatrooms/${room_id}",
+      ], ' '),
+      path      => '/usr/local/bin:/usr/bin:/bin',
+      logoutput => 'on_failure',
+      unless    => "grep '${room_string}' ${::openfire::user_home}/${room_id}.bkp",
+      require   => Exec["Waiting for Openfire service: ${room_id}"],
+      notify    => File["${::openfire::user_home}/.${room_id}"],
+    }
+  }
+
+  file { "${::openfire::user_home}/.${room_id}":
+    ensure  => $fileaction,
+    content => $room_string,
+    mode    => '0444',
+  }
+
 }

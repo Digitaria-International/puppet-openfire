@@ -41,6 +41,25 @@ openfire::user { 'user_name':
 openfire::group { 'group_name': }
 ```
 
+##To create a Room:
+
+```puppet
+openfire::room { 'room_id':
+  room_name   => 'room name',
+  description => 'description',
+}
+```
+
+###If you want to delete a room:
+
+```puppet
+openfire::room { 'room_id':
+  room_name   => 'room name',
+  description => 'description',
+  ensure      => 'absent',
+}
+```
+
 ##To Add a User to an existing group:
 
 ```puppet
