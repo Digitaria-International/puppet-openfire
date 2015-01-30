@@ -38,8 +38,22 @@ define openfire::room (
     fail('Room description is required.')
   }
 
-  validate_bool($list_room_directory, $broadcast_moderator, $broadcast_participant, $broadcast_visitor,
-    $log_conversations, $is_persistent, $is_members_only)
+  validate_bool(
+    $list_room_directory,
+    $is_persistent,
+    $is_members_only,
+    $broadcast_moderator,
+    $broadcast_participant,
+    $broadcast_visitor,
+    $log_conversations
+  )
+
+  validate_string(
+    $room_id,
+    $room_name,
+    $description,
+    $ensure
+  )
 
   ## Properties set to send as a command
   $nat_name = "<naturalName>${room_name}</naturalName>"
