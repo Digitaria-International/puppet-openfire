@@ -96,4 +96,13 @@ class openfire::install
     content => template('openfire/openfire.xml.erb'),
     require => Exec["extract-${downloaded_file}"],
   }
+
+  #Room handling helper
+  file { "${::openfire::user_home}/room.sh":
+    ensure => file,
+    owner  => 'jive',
+    group  => 'jive',
+    mode   => '0770',
+    source => 'puppet:///modules/openfire/room.sh',
+  }
 }
