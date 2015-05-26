@@ -16,25 +16,23 @@
 #
 class openfire::config
 {
-  #MySql Configuration
-  include mysql::server
+  #postgresql Configuration
+  include postgresql::server
   
-  mysql::db { $::openfire::dbname:
+  postgresql::server::db { $::openfire::dbname:
     user     => $::openfire::dbuser_name,
     password => $::openfire::dbuser_pass,
-    #dbname   => $::openfire::dbname, < removed for compatibility
     host     => $::openfire::dbhost,
     grant    => ['ALL'],
-    sql      => "${::openfire::user_home}/resources/database/openfire_mysql.sql",
+    sql      => "${::openfire::user_home}/resources/database/openfire_postgresql.sql",
     require  => [
-                  Class['mysql::server'],
+                  Class['postgresql::server'],
                   Class['openfire::install'],
                 ],
   }
 
   openfire::user { 'admin':
     password => $::openfire::of_admin_pass,
-    require  => Mysql::Db[$::openfire::dbname],
   }
 
   #Adding Required plugin for Room handling
